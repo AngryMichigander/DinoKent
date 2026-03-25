@@ -4,10 +4,13 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  ogType?: string;
 }
 
-const { title, description = "Fact-based, well-sourced debunking of Kent 'Dr. Dino' Hovind's claims, credentials, and criminal record." } = Astro.props;
+const { title, description = "Fact-based, well-sourced debunking of Kent 'Dr. Dino' Hovind's claims, credentials, and criminal record.", ogType = "website" } = Astro.props;
 const currentPath = Astro.url.pathname;
+const canonicalUrl = new URL(currentPath, Astro.site).href;
+const fullTitle = title === "Home" ? "DinoKent — The Facts About Kent Hovind" : `${title} | DinoKent`;
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -23,6 +26,7 @@ const navLinks = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,7 +34,18 @@ const navLinks = [
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <title>{title} | DinoKent</title>
+    <!-- Open Graph -->
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="DinoKent" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <title>{fullTitle}</title>
+    <slot name="head" />
   </head>
   <body class="min-h-screen bg-bg text-text font-sans antialiased">
     <!-- Header -->

@@ -1,0 +1,94 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const args = await getCollection("arguments");
+  return args.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const verdictLabels: Record<string, string> = {
+  false: "False",
+  misleading: "Misleading",
+  unsupported: "Unsupported",
+  outdated: "Outdated",
+};
+
+const verdictColors: Record<string, string> = {
+  false: "bg-red-500/10 text-red-400 border-red-500/20",
+  misleading: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  unsupported: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  outdated: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+};
+
+const categoryLabels: Record<string, string> = {
+  evolution: "Evolution",
+  geology: "Geology",
+  physics: "Physics",
+  biology: "Biology",
+  cosmology: "Cosmology",
+  general: "General",
+};
+
+const description = `Fact-check: ${entry.data.claim} — Scientific rebuttal with peer-reviewed sources.`;
+---
+
+<BaseLayout title={entry.data.title} description={description} ogType="article">
+  <div class="max-w-3xl mx-auto">
+    <nav class="mb-8">
+      <a href="/the-arguments" class="text-sm text-accent hover:underline">&larr; Back to The Arguments</a>
+    </nav>
+
+    <article>
+      <div class="flex flex-wrap items-center gap-3 mb-4">
+        <span
+          class:list={[
+            "text-xs font-medium px-2.5 py-1 rounded-full border",
+            verdictColors[entry.data.verdict],
+          ]}
+        >
+          {verdictLabels[entry.data.verdict]}
+        </span>
+        <span class="text-xs text-faint px-2 py-0.5 rounded bg-surface-alt">
+          {categoryLabels[entry.data.category]}
+        </span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-text mb-4">{entry.data.title}</h1>
+
+      <blockquote class="border-l-2 border-border pl-4 text-muted text-sm italic mb-8">
+        "{entry.data.claim}"
+      </blockquote>
+
+      <div class="prose prose-sm max-w-none">
+        <Content />
+      </div>
+
+      {entry.data.sources.length > 0 && (
+        <div class="mt-8 pt-6 border-t border-border">
+          <h2 class="text-sm font-semibold text-text mb-3">Sources</h2>
+          <ul class="space-y-2">
+            {entry.data.sources.map((src) => (
+              <li>
+                <a
+                  href={src.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm text-accent hover:underline"
+                >
+                  {src.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </article>
+  </div>
+</BaseLayout>

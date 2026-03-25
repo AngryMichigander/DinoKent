@@ -27,9 +27,23 @@ const categoryLabels: Record<string, string> = {
   cosmology: "Cosmology",
   general: "General",
 };
+
+const faqStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: args.map((arg) => ({
+    "@type": "Question",
+    name: arg.data.claim,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: `Verdict: ${verdictLabels[arg.data.verdict]}. Read the full fact-check at https://dinokent.com/arguments/${arg.slug}`,
+    },
+  })),
+};
 ---
 
 <BaseLayout title="The Arguments" description="Point-by-point rebuttals of Kent Hovind's creationist claims, backed by peer-reviewed science.">
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(faqStructuredData)} />
   <div class="max-w-3xl mx-auto">
     <h1 class="text-3xl sm:text-4xl font-extrabold text-text mb-3">The Arguments</h1>
     <p class="text-muted mb-10 leading-relaxed">
@@ -57,7 +71,9 @@ const categoryLabels: Record<string, string> = {
                   {categoryLabels[arg.data.category]}
                 </span>
               </div>
-              <h2 class="text-xl font-bold text-text mb-2">{arg.data.title}</h2>
+              <h2 class="text-xl font-bold text-text mb-2">
+                <a href={`/arguments/${arg.slug}`} class="hover:text-accent transition-colors">{arg.data.title}</a>
+              </h2>
               <blockquote class="border-l-2 border-border pl-4 text-muted text-sm italic mb-4">
                 "{arg.data.claim}"
               </blockquote>

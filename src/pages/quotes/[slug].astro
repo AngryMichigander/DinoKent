@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const quotes = await getCollection("quotes");
+  return quotes.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const truncatedQuote = entry.data.quote.length > 80
+  ? entry.data.quote.slice(0, 80) + "..."
+  : entry.data.quote;
+
+const title = `Kent Hovind Quote: "${truncatedQuote}"`;
+const description = `Kent Hovind said: "${entry.data.quote}" — Here's what the evidence actually shows. ${entry.data.rebuttalSummary}`;
+---
+
+<BaseLayout title={title} description={description} ogType="article">
+  <div class="max-w-3xl mx-auto">
+    <nav class="mb-8">
+      <a href="/in-his-own-words" class="text-sm text-accent hover:underline">&larr; Back to In His Own Words</a>
+    </nav>
+
+    <article>
+      <blockquote class="text-xl sm:text-2xl font-medium text-text leading-relaxed mb-4 border-l-4 border-accent/50 pl-4">
+        "{entry.data.quote}"
+      </blockquote>
+
+      <div class="flex flex-wrap items-center gap-3 mb-6 text-xs text-faint">
+        <span>{entry.data.source}</span>
+        {entry.data.date && (
+          <span>
+            {entry.data.date.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+            })}
+          </span>
+        )}
+        {entry.data.videoUrl && (
+          <a
+            href={`${entry.data.videoUrl}${entry.data.timestamp ? `&t=${entry.data.timestamp}` : ""}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-accent hover:underline"
+          >
+            Watch clip ↗
+          </a>
+        )}
+      </div>
+
+      <div class="rounded-lg bg-surface-alt border border-border p-4 mb-8">
+        <p class="text-xs font-semibold text-accent mb-2 uppercase tracking-wide">
+          What the evidence says
+        </p>
+        <p class="text-sm text-muted">{entry.data.rebuttalSummary}</p>
+      </div>
+
+      <div class="prose prose-sm max-w-none">
+        <Content />
+      </div>
+
+      {entry.data.sources.length > 0 && (
+        <div class="mt-8 pt-6 border-t border-border">
+          <h2 class="text-sm font-semibold text-text mb-3">Sources</h2>
+          <ul class="space-y-2">
+            {entry.data.sources.map((src) => (
+              <li>
+                <a
+                  href={src.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm text-accent hover:underline"
+                >
+                  {src.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </article>
+  </div>
+</BaseLayout>
